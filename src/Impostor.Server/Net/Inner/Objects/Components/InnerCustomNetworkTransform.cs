@@ -41,6 +41,12 @@ namespace Impostor.Server.Net.Inner.Objects.Components
             Spawned,
         }
 
+        public ushort IncrementLastSequenceId(ushort value)
+        {
+            _lastSequenceId += value;
+            return _lastSequenceId;
+        }
+
         public Vector2 Position { get; private set; }
 
         public IMessageReader PacketMessageReader { get; private set; }
