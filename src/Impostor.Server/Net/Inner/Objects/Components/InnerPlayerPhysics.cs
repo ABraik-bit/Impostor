@@ -85,14 +85,36 @@ namespace Impostor.Server.Net.Inner.Objects.Components
                     switch (call)
                     {
                         case RpcCalls.EnterVent:
-                            await _eventManager.CallAsync(new PlayerEnterVentEvent(Game, sender, _playerControl, vent));
+                        {
+                            var @event = new PlayerEnterVentEvent(Game, sender, _playerControl, vent);
+                            await _eventManager.CallAsync(@event);
+
+                            if (@event.IsCancelled)
+                            {
+                                return false;
+                            }
+
+                            // Continue with normal vent behavior if not cancelled
+                            // The RPC will be broadcast to other players automatically by the RPC handling system
                             break;
+                        }
                         case RpcCalls.ExitVent:
-                            await _eventManager.CallAsync(new PlayerExitVentEvent(Game, sender, _playerControl, vent));
+                        {
+                            var @event = new PlayerExitVentEvent(Game, sender, _playerControl, vent);
+                            await _eventManager.CallAsync(@event);
+
+                            if (@event.IsCancelled)
+                            {
+                                return false;
+                            }
+
+                            // Continue with normal vent behavior if not cancelled
+                            // The RPC will be broadcast to other players automatically by the RPC handling system
                             break;
+                        }
                     }
 
-                    break;
+                    return true;
                 }
 
                 case RpcCalls.BootFromVent:
