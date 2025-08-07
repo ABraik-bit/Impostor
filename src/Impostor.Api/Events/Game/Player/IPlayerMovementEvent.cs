@@ -1,6 +1,6 @@
 namespace Impostor.Api.Events.Player
 {
-    public interface IPlayerMovementEvent : IPlayerEvent
+    public interface IPlayerMovementEvent : IPlayerEvent, IEventCancelable
     {
     }
 }

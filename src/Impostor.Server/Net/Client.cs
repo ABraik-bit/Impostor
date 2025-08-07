@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Impostor.Api;
 using Impostor.Api.Config;
@@ -11,6 +12,8 @@ using Impostor.Api.Net.Messages;
 using Impostor.Api.Net.Messages.C2S;
 using Impostor.Api.Net.Messages.S2C;
 using Impostor.Hazel;
+using Impostor.Server.Net.Inner;
+using Impostor.Server.Net.Inner.Objects.Components;
 using Impostor.Server.Net.Manager;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -235,23 +238,45 @@ namespace Impostor.Server.Net
 
                     var position = reader.Position;
                     var verified = await Player!.Game.HandleGameDataAsync(reader, Player, toPlayer);
+                    var shouldSendData = true;
+
                     reader.Seek(position);
 
                     if (verified && Player != null)
                     {
-                        // Broadcast packet to all other players.
-                        using (var writer = MessageWriter.Get(messageType))
+                        // Check if the event was a movement event
+                        if (Player.Character != null && !toPlayer)
                         {
-                            if (toPlayer)
+                            var childMessage = reader.ReadMessage();
+                            if (childMessage.Tag == 1)
                             {
-                                var target = reader.ReadPackedInt32();
-                                reader.CopyTo(writer);
-                                await Player.Game.SendToAsync(writer, target);
+                                var sequenceId = childMessage.ReadUInt32();
+
+                                // Call an event with the last set position
+                                reader.Seek(position);
+                                var readerCopy = reader.Copy();
+                                shouldSendData = await Player.Character.NetworkTransform.HandleMovementPacketAsync(Player, readerCopy);
                             }
-                            else
+                        }
+
+                        reader.Seek(position);
+
+                        if (shouldSendData)
+                        {
+                            // Broadcast packet to all other players.
+                            using (var writer = MessageWriter.Get(messageType))
                             {
-                                reader.CopyTo(writer);
-                                await Player.Game.SendToAllExceptAsync(writer, Id);
+                                if (toPlayer)
+                                {
+                                    var target = reader.ReadPackedInt32();
+                                    reader.CopyTo(writer);
+                                    await Player.Game.SendToAsync(writer, target);
+                                }
+                                else
+                                {
+                                    reader.CopyTo(writer);
+                                    await Player.Game.SendToAllExceptAsync(writer, Id);
+                                }
                             }
                         }
                     }

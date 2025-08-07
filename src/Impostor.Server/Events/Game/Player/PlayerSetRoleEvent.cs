@@ -1,18 +1,20 @@
 using Impostor.Api.Events.Player;
 using Impostor.Api.Games;
+using Impostor.Api.Innersloth;
 using Impostor.Api.Net;
 using Impostor.Api.Net.Inner.Objects;
 
-namespace Impostor.Server.Events.Player
+namespace Impostor.Server.Events.Game.Player
 {
-    public class PlayerChatEvent : IPlayerChatEvent
+    public class PlayerSetRoleEvent : IPlayerSetRoleEvent
     {
-        public PlayerChatEvent(IGame game, IClientPlayer clientPlayer, IInnerPlayerControl playerControl, string message)
+        public PlayerSetRoleEvent(IGame game, IClientPlayer clientPlayer, IInnerPlayerControl playerControl, IInnerPlayerInfo playerInfo,  RoleTypes role)
         {
             Game = game;
             ClientPlayer = clientPlayer;
             PlayerControl = playerControl;
-            Message = message;
+            PlayerInfo = playerInfo;
+            Role = role;
         }
 
         public IGame Game { get; }
@@ -21,7 +23,9 @@ namespace Impostor.Server.Events.Player
 
         public IInnerPlayerControl PlayerControl { get; }
 
-        public string Message { get; }
+        public IInnerPlayerInfo PlayerInfo { get; }
+
+        public RoleTypes Role { get; }
 
         public bool IsCancelled { get; set; }
     }

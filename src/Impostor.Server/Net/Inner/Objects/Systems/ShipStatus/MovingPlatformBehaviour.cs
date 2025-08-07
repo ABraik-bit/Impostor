@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using Impostor.Hazel;
 
 namespace Impostor.Server.Net.Inner.Objects.Systems.ShipStatus
 {

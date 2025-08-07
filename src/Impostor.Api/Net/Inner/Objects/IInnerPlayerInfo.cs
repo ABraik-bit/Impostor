@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Impostor.Api.Innersloth;
 using Impostor.Api.Innersloth.Customization;
+using Impostor.Api.Net.Messages;
 
 namespace Impostor.Api.Net.Inner.Objects
 {
@@ -27,6 +29,14 @@ namespace Impostor.Api.Net.Inner.Objects
         /// </summary>
         bool IsDead { get; }
 
+        string FriendCode { get; }
+
+        string PUID { get; }
+
+        bool Disconnected { get; set; }
+
+        uint NetId { get; }
+
         Dictionary<PlayerOutfitType, PlayerOutfit> Outfits { get; }
 
         PlayerOutfitType CurrentOutfitType { get; set; }
@@ -43,5 +53,9 @@ namespace Impostor.Api.Net.Inner.Objects
         DateTimeOffset LastMurder { get; }
 
         uint PlayerLevel { get; }
+
+        ValueTask<bool> SerializeAsync(IMessageWriter writer, bool initialState);
+
+        
     }
 }

@@ -49,13 +49,17 @@ namespace Impostor.Server.Net.Inner.Objects
 
         public RoleTypes? RoleWhenAlive { get; internal set; }
 
-        public bool Disconnected { get; internal set; }
+        public bool Disconnected { get; set; }
 
         public bool IsImpostor => RoleType is RoleTypes.Impostor or RoleTypes.Shapeshifter or RoleTypes.ImpostorGhost or RoleTypes.Phantom;
 
         public bool CanVent => RoleType is RoleTypes.Impostor or RoleTypes.Shapeshifter or RoleTypes.Phantom or RoleTypes.Engineer;
 
         public bool IsDead { get; internal set; }
+
+        public string FriendCode { get; internal set; }
+
+        public string PUID { get; internal set; }
 
         public DeathReason LastDeathReason { get; internal set; }
 
@@ -176,8 +180,8 @@ namespace Impostor.Server.Net.Inner.Objects
             }
 
             // Impostor doesn't expose fields that aren't properly validated
-            reader.ReadString(); // FriendCode
-            reader.ReadString(); // PUID
+            FriendCode = reader.ReadString(); // FriendCode
+            PUID = reader.ReadString(); // PUID
 
             return ValueTask.CompletedTask;
         }

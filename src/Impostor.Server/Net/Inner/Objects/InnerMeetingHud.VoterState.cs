@@ -1,3 +1,5 @@
+using Impostor.Hazel;
+
 namespace Impostor.Server.Net.Inner.Objects
 {
     internal partial class InnerMeetingHud

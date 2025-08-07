@@ -7,6 +7,7 @@ using Impostor.Api.Net;
 using Impostor.Api.Net.Custom;
 using Impostor.Api.Net.Inner;
 using Impostor.Api.Net.Messages.Rpcs;
+using Impostor.Hazel;
 using Impostor.Server.Events.Player;
 using Impostor.Server.Net.State;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,7 @@ namespace Impostor.Server.Net.Inner.Objects.Components
         private readonly IEventManager _eventManager;
         private readonly ObjectPool<PlayerMovementEvent> _pool;
 
-        private ushort _lastSequenceId;
+        public ushort _lastSequenceId { get; private set; }
 
         public InnerCustomNetworkTransform(ICustomMessageManager<ICustomRpc> customMessageManager, Game game, ILogger<InnerCustomNetworkTransform> logger, InnerPlayerControl playerControl, IEventManager eventManager, ObjectPool<PlayerMovementEvent> pool) : base(customMessageManager, game)
         {
@@ -40,7 +41,20 @@ namespace Impostor.Server.Net.Inner.Objects.Components
             Spawned,
         }
 
+        public ushort IncrementLastSequenceId(ushort value)
+        {
+            _lastSequenceId += value;
+            return _lastSequenceId;
+        }
+
         public Vector2 Position { get; private set; }
+
+        public IMessageReader PacketMessageReader { get; private set; }
+
+        internal void SetPosition(Vector2 position)
+        {
+            Position = position;
+        }
 
         public override ValueTask<bool> SerializeAsync(IMessageWriter writer, bool initialState)
         {
@@ -66,7 +80,7 @@ namespace Impostor.Server.Net.Inner.Objects.Components
             if (initialState)
             {
                 _lastSequenceId = sequenceId;
-                await SetPositionAsync(sender, reader.ReadVector2());
+                SetPosition(reader.ReadVector2());
             }
             else
             {
@@ -84,7 +98,7 @@ namespace Impostor.Server.Net.Inner.Objects.Components
                     if (SidGreaterThan(newSid, _lastSequenceId))
                     {
                         _lastSequenceId = newSid;
-                        await SetPositionAsync(sender, position);
+                        SetPosition(position);
                     }
                 }
             }
@@ -133,6 +147,18 @@ namespace Impostor.Server.Net.Inner.Objects.Components
             playerMovementEvent.Reset(Game, sender, _playerControl);
             await _eventManager.CallAsync(playerMovementEvent);
             _pool.Return(playerMovementEvent);
+        }
+
+        internal async ValueTask<bool> HandleMovementPacketAsync(IClientPlayer sender, IMessageReader reader)
+        {
+            PacketMessageReader = reader;
+            var playerMovementEvent = _pool.Get();
+            playerMovementEvent.Reset(Game, sender, _playerControl);
+            await _eventManager.CallAsync(playerMovementEvent);
+            var result = !playerMovementEvent.IsCancelled;
+            _pool.Return(playerMovementEvent);
+
+            return result;
         }
 
         private static bool SidGreaterThan(ushort newSid, ushort prevSid)
