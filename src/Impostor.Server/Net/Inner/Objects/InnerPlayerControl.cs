@@ -633,10 +633,9 @@ namespace Impostor.Server.Net.Inner.Objects
 
             if (task != null)
             {
+                task.Complete = true;
                 var @event = new PlayerCompletedTaskEvent(Game, sender, this, task);
                 await _eventManager.CallAsync(@event);
-
-                task.Complete = true;
 
                 if (@event.IsCancelled)
                 {

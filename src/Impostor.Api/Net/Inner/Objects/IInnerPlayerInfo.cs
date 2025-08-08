@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Impostor.Api.Innersloth;
 using Impostor.Api.Innersloth.Customization;
+using Impostor.Api.Net.Inner;
 using Impostor.Api.Net.Messages;
 
 namespace Impostor.Api.Net.Inner.Objects
@@ -56,6 +57,12 @@ namespace Impostor.Api.Net.Inner.Objects
 
         ValueTask<bool> SerializeAsync(IMessageWriter writer, bool initialState);
 
-        
+        /// <summary>
+        ///     Gets the next RPC sequence ID for the specified RPC call.
+        ///     This is used to ensure proper synchronization of outfit changes.
+        /// </summary>
+        /// <param name="rpc">The RPC call to get the sequence ID for.</param>
+        /// <returns>The next sequence ID for the RPC call.</returns>
+        byte GetNextRpcSequenceId(RpcCalls rpc);
     }
 }
